@@ -2,9 +2,14 @@ require "sequel"
 require "yaml"
 
 class DatabaseConnection
-  def create
+  def create(environment = "test")
+    Sequel.connect(params(environment))
+  end
+
+  private
+
+  def params(environment)
     database_config = YAML.load_file('config.yml')
-    sequel_params = database_config["sequel"].reduce({}, :merge)
-    Sequel.connect(sequel_params)
+    database_config[environment].reduce({}, :merge)
   end
 end
