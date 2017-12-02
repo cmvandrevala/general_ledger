@@ -86,4 +86,14 @@ describe Account do
     end
   end
 
+  it "has an institution as a parent" do
+    DatabaseCleaner.cleaning do
+      institution = Institution.create(name: "inst")
+      account = Account.create(name: "Account Name 1", owner: "Bob", symbol: "CASHX", institution_id: institution[:id])
+      expect(account[:institution_id]).to eq institution[:id]
+      expect(institution.accounts).to eq [account]
+      expect(account.institution).to eq institution
+    end
+  end
+
 end
