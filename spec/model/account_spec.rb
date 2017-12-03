@@ -96,4 +96,20 @@ describe Account do
     end
   end
 
+  it "has a default value of true for the open column" do
+    DatabaseCleaner.cleaning do
+      institution = Institution.create(name: "inst")
+      account = Account.create(name: "Account Name", owner: "Bob", symbol: "CASHX", institution_id: institution[:id])
+      expect(account[:open]).to be true
+    end
+  end
+
+  it "can set the open column to false" do
+    DatabaseCleaner.cleaning do
+      institution = Institution.create(name: "inst")
+      account = Account.create(name: "Account Name", owner: "Bob", symbol: "CASHX", open: false, institution_id: institution[:id])
+      expect(account[:open]).to be false
+    end
+  end
+
 end
