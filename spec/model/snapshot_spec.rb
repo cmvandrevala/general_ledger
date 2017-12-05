@@ -89,14 +89,15 @@ describe Snapshot do
     end
   end
 
-  it "has an account as a parent" do
+  it "has an investment as a parent" do
     DatabaseCleaner.cleaning do
       institution = Institution.create(name: "inst")
-      account = Account.create(name: "Account Name 1", owner: "Bob", symbol: "CASHX", institution_id: institution[:id])
-      snapshot = Snapshot.create(timestamp: DateTime.now, value: 10000, description: "Debit", account_id: account[:id])
-      expect(snapshot[:account_id]).to eq account[:id]
-      expect(account.snapshots).to eq [snapshot]
-      expect(snapshot.account).to eq account
+      account = Account.create(name: "Account Name", owner: "Bob", institution_id: institution[:id])
+      investment = Investment.create(name: "Investment Name", symbol: "CASHX", asset: true, account_id: account[:id])
+      snapshot = Snapshot.create(timestamp: DateTime.now, value: 10000, description: "Debit", investment_id: investment[:id])
+      expect(snapshot[:investment_id]).to eq investment[:id]
+      expect(investment.snapshots).to eq [snapshot]
+      expect(snapshot.investment).to eq investment
     end
   end
 
