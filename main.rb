@@ -2,12 +2,6 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 
 require 'sinatra'
 require 'db/database_connection'
-require_relative 'lib/model/models'
-
-DB = DatabaseConnection.new.create
-
-institution = Institution.create(name: "Inst Name")
-account = Account.create(name: "Account Name", owner: "Bob", institution_id: institution[:id])
 
 before do
   request.body.rewind

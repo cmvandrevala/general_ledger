@@ -2,8 +2,9 @@ require "sequel"
 require "yaml"
 
 class DatabaseConnection
+
   def create(environment = "test")
-    Sequel.connect(params(environment))
+    @@db ||= Sequel.connect(params(environment))
   end
 
   private
