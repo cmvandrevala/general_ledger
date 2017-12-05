@@ -1,9 +1,9 @@
-require "sequel"
-require "yaml"
+require 'sequel'
+require 'yaml'
 
 class DatabaseConnection
 
-  def create(environment = "test")
+  def create(environment = 'test')
     @@db ||= Sequel.connect(params(environment))
   end
 

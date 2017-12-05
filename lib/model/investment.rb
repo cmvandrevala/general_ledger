@@ -1,11 +1,11 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 
-require "sequel"
+require 'sequel'
 require_relative '../../db/database_connection'
 
 db = DatabaseConnection.new.create
 
-class Investment < Sequel::Model(db[:investments]);
+class Investment < Sequel::Model(db[:investments])
   many_to_one :account
   one_to_many :snapshots
 end
