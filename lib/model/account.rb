@@ -2,6 +2,7 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 
 require 'sequel'
 require_relative '../../db/database_connection'
+require_relative './institution'
 
 db = DatabaseConnection.new.create
 
@@ -11,7 +12,9 @@ class Account < Sequel::Model(db[:accounts])
 
   def self.find_from_json(json)
     institution = Institution.where(name: json['institution']).first
-    Account.where(name: json['name'], owner: json['owner'], institution_id: institution[:id]).first
+    if !institution.nil?
+      Account.where(name: json['account'], owner: json['owner'], institution_id: institution[:id]).first
+    end
   end
 end
 

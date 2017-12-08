@@ -98,15 +98,49 @@ describe Account do
     end
   end
 
-  it 'finds an account given parameters via JSON' do
-    DatabaseCleaner.cleaning do
-      institution = Institution.create(name: 'inst')
-      Account.create(name: 'Account Name', owner: 'Bob', institution_id: institution[:id])
-      json = {'name' => 'Account Name', 'owner' => 'Bob', 'institution' => 'inst'}
-      account = Account.find_from_json(json)
-      expect(account[:name]).to eq 'Account Name'
-      expect(account.institution).to eq institution
+  context "#find_from_json" do
+
+    it 'finds an account given parameters via JSON' do
+      DatabaseCleaner.cleaning do
+        institution = Institution.create(name: 'inst')
+        Account.create(name: 'Account Name', owner: 'Bob', institution_id: institution[:id])
+        json = {'account' => 'Account Name', 'owner' => 'Bob', 'institution' => 'inst'}
+        account = Account.find_from_json(json)
+        expect(account[:name]).to eq 'Account Name'
+        expect(account.institution).to eq institution
+      end
     end
+
+    it 'returns nil if it cannot find the corresponding institution' do
+      DatabaseCleaner.cleaning do
+        institution = Institution.create(name: 'inst')
+        Account.create(name: 'Account Name', owner: 'Bob', institution_id: institution[:id])
+        json = {'account' => 'Account Name', 'owner' => 'Bob', 'institution' => 'random'}
+        account = Account.find_from_json(json)
+        expect(account).to be_nil
+      end
+    end
+
+    it 'returns nil if it cannot find the corresponding account name' do
+      DatabaseCleaner.cleaning do
+        institution = Institution.create(name: 'inst')
+        Account.create(name: 'Account Name', owner: 'Bob', institution_id: institution[:id])
+        json = {'account' => 'random name', 'owner' => 'Bob', 'institution' => 'inst'}
+        account = Account.find_from_json(json)
+        expect(account).to be_nil
+      end
+    end
+
+    it 'returns nil if it cannot find the corresponding owner' do
+      DatabaseCleaner.cleaning do
+        institution = Institution.create(name: 'inst')
+        Account.create(name: 'Account Name', owner: 'Bob', institution_id: institution[:id])
+        json = {'account' => 'Account Name', 'owner' => 'random', 'institution' => 'inst'}
+        account = Account.find_from_json(json)
+        expect(account).to be_nil
+      end
+    end
+
   end
 
 end
