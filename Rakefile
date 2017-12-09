@@ -3,9 +3,9 @@ require 'db/database_connection'
 
 task :default => [:start]
 
-desc 'Start the Server to Serve General Ledger Data'
+desc 'Start the server containing the general ledger data'
 task :start do
-  ruby 'main.rb'
+  exec('rackup -s thin -p 4567')
 end
 
 namespace :db do

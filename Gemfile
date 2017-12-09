@@ -1,12 +1,16 @@
 source 'https://rubygems.org'
 
-ruby '2.4.1'
+ruby '2.3.5'
 
 gem 'pg'
 gem 'rake'
-gem 'rubocop', require: false
 gem 'sequel'
 gem 'sinatra'
+gem 'thin'
+
+group :development do
+  gem 'rubocop', require: false
+end
 
 group :test do
   gem 'database_cleaner'
