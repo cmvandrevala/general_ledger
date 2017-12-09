@@ -1,5 +1,5 @@
 require 'sinatra/base'
-require_relative 'lib/json/response_builder'
+require_relative 'lib/main/api'
 
 class GeneralLedger < Sinatra::Base
   before do
@@ -8,8 +8,11 @@ class GeneralLedger < Sinatra::Base
   end
 
   post '/open_account' do
-    account = Account.find_by_json @request_payload
-    account.update(open: true)
+    Api.new.open_account(@request_payload)
+  end
+
+  post '/close_account' do
+    Api.new.close_account(@request_payload)
   end
 
   run! if app_file == $0
