@@ -15,5 +15,9 @@ class GeneralLedger < Sinatra::Base
     Api.new.close_account(@request_payload)
   end
 
+  post '/append_snapshot' do
+    Api.new.append_snapshot(@request_payload)
+  end
+
   run! if app_file == $0
 end

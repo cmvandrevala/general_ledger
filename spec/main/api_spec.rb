@@ -93,4 +93,111 @@ describe 'GeneralLedger' do
 
   end
 
+  context "#append_snapshot" do
+
+    it "appends a snapshot to the database with no existing information" do
+      DatabaseCleaner.cleaning do
+        json = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things', 'asset' => true, 'value' => 1012, 'timestamp' => Date.new(2013,1,7)}
+        response = @api.append_snapshot(json)
+        institution = Institution.all.first
+        account = Account.all.first
+        investment = Investment.all.first
+        snapshot = Snapshot.all.first
+        expect(institution[:name]).to eq 'US Bank'
+        expect(account[:name]).to eq 'Checking'
+        expect(investment[:name]).to eq 'Poodles and Things'
+        expect(snapshot[:value]).to eq 1012
+        expect(snapshot[:timestamp]).to eq Date.new(2013,1,7)
+      end
+    end
+
+    it "ensures that the institution, account, investment, and snapshot all have the correct relations" do
+      DatabaseCleaner.cleaning do
+        json = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things', 'asset' => true, 'value' => 1012, 'timestamp' => Date.new(2013,1,7)}
+        response = @api.append_snapshot(json)
+        institution = Institution.all.first
+        account = Account.all.first
+        investment = Investment.all.first
+        snapshot = Snapshot.all.first
+        expect(account.institution).to eq institution
+        expect(investment.account).to eq account
+        expect(snapshot.investment).to eq investment
+      end
+    end
+
+    it "appends a snapshot to the database when the institution already exists" do
+      DatabaseCleaner.cleaning do
+        institution = Institution.create(name: 'US Bank')
+        json = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things', 'asset' => true, 'value' => 1012, 'timestamp' => Date.new(2013,1,7)}
+        response = @api.append_snapshot(json)
+        account = Account.all.first
+        investment = Investment.all.first
+        snapshot = Snapshot.all.first
+        expect(Institution.all.length).to eq 1
+        expect(account[:name]).to eq 'Checking'
+        expect(investment[:name]).to eq 'Poodles and Things'
+        expect(snapshot[:value]).to eq 1012
+        expect(snapshot[:timestamp]).to eq Date.new(2013,1,7)
+        expect(account.institution).to eq institution
+        expect(investment.account).to eq account
+        expect(snapshot.investment).to eq investment
+      end
+    end
+
+    it "appends a snapshot to the database when the account already exists" do
+      DatabaseCleaner.cleaning do
+        institution = Institution.create(name: 'US Bank')
+        account = Account.create(name: 'Checking', owner: 'Sam Sammerson', institution_id: institution[:id])
+        json = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things', 'asset' => true, 'value' => 1012, 'timestamp' => Date.new(2013,1,7)}
+        response = @api.append_snapshot(json)
+        investment = Investment.all.first
+        snapshot = Snapshot.all.first
+        expect(Institution.all.length).to eq 1
+        expect(Account.all.length).to eq 1
+        expect(investment[:name]).to eq 'Poodles and Things'
+        expect(snapshot[:value]).to eq 1012
+        expect(snapshot[:timestamp]).to eq Date.new(2013,1,7)
+        expect(account.institution).to eq institution
+        expect(investment.account).to eq account
+        expect(snapshot.investment).to eq investment
+      end
+    end
+
+    it "appends a snapshot to the database when the invesetment already exists" do
+      DatabaseCleaner.cleaning do
+        institution = Institution.create(name: 'US Bank')
+        account = Account.create(name: 'Checking', owner: 'Sam Sammerson', institution_id: institution[:id])
+        investment = Investment.create(name: 'Poodles and Things', symbol: 'PT', asset: true, account_id: account[:id])
+        json = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things', 'asset' => true, 'value' => 1012, 'timestamp' => Date.new(2013,1,7)}
+        response = @api.append_snapshot(json)
+        snapshot = Snapshot.all.first
+        expect(Institution.all.length).to eq 1
+        expect(Account.all.length).to eq 1
+        expect(Investment.all.length).to eq 1
+        expect(snapshot[:value]).to eq 1012
+        expect(snapshot[:timestamp]).to eq Date.new(2013,1,7)
+        expect(account.institution).to eq institution
+        expect(investment.account).to eq account
+        expect(snapshot.investment).to eq investment
+      end
+    end
+
+    it "returns a successful response if the snapshot has been created" do
+      DatabaseCleaner.cleaning do
+        json = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things', 'asset' => true, 'value' => 1012, 'timestamp' => Date.new(2013,1,7)}
+        response = @api.append_snapshot(json)
+        expect(response).to eq [200, {"Content-Type"=>"application/json"}, [{status: "Successfully appended the snapshot"}.to_json]]
+      end
+    end
+
+    it "returns a failure response if the JSON input is invalid" do
+      DatabaseCleaner.cleaning do
+        invalid_json = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things'}
+        response = @api.append_snapshot(invalid_json)
+        expect(response).to eq [200, {"Content-Type"=>"application/json"}, [{status: "The JSON is invalid"}.to_json]]
+      end
+    end
+
+  end
+
 end

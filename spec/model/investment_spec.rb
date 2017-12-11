@@ -42,12 +42,6 @@ describe Investment do
     end
   end
 
-  it 'enforces a non-null owner for the investment' do
-    DatabaseCleaner.cleaning do
-      expect{ Investment.create(name: 'Investment Name', asset: true, term: 'short') }.to raise_error Sequel::NotNullConstraintViolation
-    end
-  end
-
   it 'sets the asset of the investment to true' do
     DatabaseCleaner.cleaning do
       Investment.create(name: 'Investment Name', symbol: 'CASHX', asset: true)

@@ -6,8 +6,8 @@ Sequel.migration do
       DateTime :created_at
       DateTime :updated_at
       String :name, null: false
-      String :symbol, null: false
       TrueClass :asset, null: false
+      String :symbol
     end
   end
 end
