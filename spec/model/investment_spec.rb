@@ -7,22 +7,22 @@ describe Investment do
 
   it 'creates a new investment' do
     DatabaseCleaner.cleaning do
-      Investment.create(name: 'Investment Name', symbol: 'ABC', asset: true)
+      Investment.create(name: 'Investment Name', symbol: 'ABC', asset: true, term: 'short')
       expect(Investment.all.length).to eq 1
     end
   end
 
   it 'creates two new investments' do
     DatabaseCleaner.cleaning do
-      Investment.create(name: 'Investment Name 1', symbol: 'CASHX', asset: true)
-      Investment.create(name: 'Investment Name 2', symbol: 'PG', asset: false)
+      Investment.create(name: 'Investment Name 1', symbol: 'CASHX', asset: true, term: 'short')
+      Investment.create(name: 'Investment Name 2', symbol: 'PG', asset: false, term: 'short')
       expect(Investment.all.length).to eq 2
     end
   end
 
   it 'sets the name of the investment' do
     DatabaseCleaner.cleaning do
-      Investment.create(name: 'Investment Name', symbol: 'CASHX', asset: true)
+      Investment.create(name: 'Investment Name', symbol: 'CASHX', asset: true, term: 'short')
       investment = Investment.all.first
       expect(investment[:name]).to eq 'Investment Name'
     end
@@ -30,13 +30,13 @@ describe Investment do
 
   it 'enforces a non-null name for the investment' do
     DatabaseCleaner.cleaning do
-      expect{ Investment.create(symbol: 'CASHX', asset: true) }.to raise_error Sequel::NotNullConstraintViolation
+      expect{ Investment.create(symbol: 'CASHX', asset: true, term: 'short') }.to raise_error Sequel::NotNullConstraintViolation
     end
   end
 
   it 'sets the symbol of the investment' do
     DatabaseCleaner.cleaning do
-      Investment.create(name: 'Investment Name', symbol: 'CASHX', asset: false)
+      Investment.create(name: 'Investment Name', symbol: 'CASHX', asset: false, term: 'short')
       investment = Investment.all.first
       expect(investment[:symbol]).to eq 'CASHX'
     end
@@ -44,7 +44,7 @@ describe Investment do
 
   it 'enforces a non-null owner for the investment' do
     DatabaseCleaner.cleaning do
-      expect{ Investment.create(name: 'Investment Name', asset: true) }.to raise_error Sequel::NotNullConstraintViolation
+      expect{ Investment.create(name: 'Investment Name', asset: true, term: 'short') }.to raise_error Sequel::NotNullConstraintViolation
     end
   end
 
@@ -64,9 +64,39 @@ describe Investment do
     end
   end
 
+  it 'sets the term of the investment to short' do
+    DatabaseCleaner.cleaning do
+      Investment.create(name: 'Investment Name', symbol: 'CASHX', asset: false, term: 'short')
+      investment = Investment.all.first
+      expect(investment[:term]).to eq 'short'
+    end
+  end
+
+  it 'sets the term of the investment to medium' do
+    DatabaseCleaner.cleaning do
+      Investment.create(name: 'Investment Name', symbol: 'CASHX', asset: false, term: 'medium')
+      investment = Investment.all.first
+      expect(investment[:term]).to eq 'medium'
+    end
+  end
+
+  it 'sets the term of the investment to long' do
+    DatabaseCleaner.cleaning do
+      Investment.create(name: 'Investment Name', symbol: 'CASHX', asset: false, term: 'long')
+      investment = Investment.all.first
+      expect(investment[:term]).to eq 'long'
+    end
+  end
+
+  it 'does not set an invesetment term with a random value' do
+    DatabaseCleaner.cleaning do
+      expect{Investment.create(name: 'Investment Name', symbol: 'CASHX', asset: false, term: 'foobar')}.to raise_error Sequel::CheckConstraintViolation
+    end
+  end
+
   it 'enforces a non-null asset for the investment' do
     DatabaseCleaner.cleaning do
-      expect{ Investment.create(name: 'Investment Name', symbol: 'CASHX') }.to raise_error Sequel::NotNullConstraintViolation
+      expect{ Investment.create(name: 'Investment Name', symbol: 'CASHX', term: 'short') }.to raise_error Sequel::NotNullConstraintViolation
     end
   end
 
