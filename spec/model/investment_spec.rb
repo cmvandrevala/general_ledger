@@ -94,6 +94,37 @@ describe Investment do
     end
   end
 
+  it 'sets the date an investment was opened' do
+    DatabaseCleaner.cleaning do
+      Investment.create(name: 'Investment Name', symbol: 'CASHX', asset: false, open_date: Date.new(2001,2,3))
+      investment = Investment.all.first
+      expect(investment[:open_date]).to eq Date.new(2001,2,3)
+    end
+  end
+
+  it 'sets the date an investment was closed' do
+    DatabaseCleaner.cleaning do
+      Investment.create(name: 'Investment Name', symbol: 'CASHX', asset: false, close_date: Date.new(2012,2,3))
+      investment = Investment.all.first
+      expect(investment[:close_date]).to eq Date.new(2012,2,3)
+    end
+  end
+
+  it 'sets both an open and close date' do
+    DatabaseCleaner.cleaning do
+      Investment.create(name: 'Investment Name', symbol: 'CASHX', asset: false, open_date: Date.new(2010,1,1), close_date: Date.new(2012,2,3))
+      investment = Investment.all.first
+      expect(investment[:open_date]).to eq Date.new(2010,1,1)
+      expect(investment[:close_date]).to eq Date.new(2012,2,3)
+    end
+  end
+
+  it 'the close date cannot occur before the open date' do
+    DatabaseCleaner.cleaning do
+      expect{Investment.create(name: 'Investment Name', symbol: 'CASHX', asset: false, open_date: Date.new(2012,2,8), close_date: Date.new(2012,2,3))}.to raise_error Sequel::CheckConstraintViolation
+    end
+  end
+
   it 'enforces a non-null asset for the investment' do
     DatabaseCleaner.cleaning do
       expect{ Investment.create(name: 'Investment Name', symbol: 'CASHX', term: 'short') }.to raise_error Sequel::NotNullConstraintViolation
