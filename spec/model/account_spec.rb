@@ -48,6 +48,37 @@ describe Account do
     end
   end
 
+  it 'sets the date an account was opened' do
+    DatabaseCleaner.cleaning do
+      Account.create(name: 'Account Name', owner: 'Sam Sammerson', open_date: Date.new(2001,2,3))
+      account = Account.all.first
+      expect(account[:open_date]).to eq Date.new(2001,2,3)
+    end
+  end
+
+  it 'sets the date an account was closed' do
+    DatabaseCleaner.cleaning do
+      Account.create(name: 'Account Name', owner: 'Sam Sammerson', close_date: Date.new(2012,2,3))
+      account = Account.all.first
+      expect(account[:close_date]).to eq Date.new(2012,2,3)
+    end
+  end
+
+  it 'sets both an open and close date' do
+    DatabaseCleaner.cleaning do
+      Account.create(name: 'Account Name', owner: 'Sam Sammerson', open_date: Date.new(2010,1,1), close_date: Date.new(2012,2,3))
+      account = Account.all.first
+      expect(account[:open_date]).to eq Date.new(2010,1,1)
+      expect(account[:close_date]).to eq Date.new(2012,2,3)
+    end
+  end
+
+  it 'the close date cannot occur before the open date' do
+    DatabaseCleaner.cleaning do
+      expect{Account.create(name: 'Account Name', owner: 'Sam Sammerson', open_date: Date.new(2012,2,8), close_date: Date.new(2012,2,3))}.to raise_error Sequel::CheckConstraintViolation
+    end
+  end
+
   it 'sets the created_at timestamp' do
     DatabaseCleaner.cleaning do
       Account.create(name: 'Account Name 1', owner: 'Bob')
