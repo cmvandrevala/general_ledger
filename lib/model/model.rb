@@ -9,13 +9,6 @@ db = Sequel.connect(params)
 class Account < Sequel::Model(db[:accounts])
   many_to_one :institution
   one_to_many :investments
-
-  def self.find_from_json(json)
-    institution = Institution.where(name: json['institution']).first
-    if !institution.nil?
-      Account.where(name: json['account'], owner: json['owner'], institution_id: institution[:id]).first
-    end
-  end
 end
 
 class Institution < Sequel::Model(db[:institutions])
