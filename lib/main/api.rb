@@ -4,8 +4,12 @@ require 'sequel'
 
 require_relative '../../lib/json/response_builder.rb'
 require_relative '../../lib/json/snapshot_validator.rb'
-require_relative '../../lib/model/model.rb'
+
 require_relative '../../lib/model/account_access.rb'
+require_relative '../../lib/model/investment_access.rb'
+require_relative '../../lib/model/institution_access.rb'
+require_relative '../../lib/model/snapshot_access.rb'
+
 
 class Api
 
@@ -23,10 +27,10 @@ class Api
 
   def append_snapshot(json)
     if SnapshotValidator.new.valid?(json)
-      institution = Institution.find_or_create(name: json['institution'])
+      institution = InstitutionAccess.find_or_create(name: json['institution'])
       account = AccountAccess.find_or_create(name: json['account'], owner: json['owner'], institution_id: institution[:id])
-      investment = Investment.find_or_create(name: json['investment'], asset: json['asset'], account_id: account[:id])
-      Snapshot.create(timestamp: json['timestamp'], value: json['value'], investment_id: investment[:id])
+      investment = InvestmentAccess.find_or_create(name: json['investment'], asset: json['asset'], account_id: account[:id])
+      SnapshotAccess.create(timestamp: json['timestamp'], value: json['value'], investment_id: investment[:id])
       ResponseBuilder.new.set_body({status: 'Successfully appended the snapshot'}.to_json).build
     else
       ResponseBuilder.new.set_body({status: 'The JSON is invalid'}.to_json).build

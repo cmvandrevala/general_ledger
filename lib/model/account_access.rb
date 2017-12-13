@@ -1,3 +1,5 @@
+require_relative './model'
+
 class AccountAccess
 
   def self.all
@@ -21,6 +23,10 @@ class AccountAccess
     if !institution.nil?
       Account.where(name: json['account'], owner: json['owner'], institution_id: institution[:id]).first
     end
+  end
+
+  def self.where(params)
+    Account.where(params)
   end
 
 end

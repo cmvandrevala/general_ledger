@@ -14,11 +14,11 @@ describe 'GeneralLedger' do
 
     it "opens a closed account" do
       DatabaseCleaner.cleaning do
-        institution = Institution.create(name: "US Bank")
-        Account.create(name: "Checking", owner: "Bob Bobberson", institution_id: institution[:id], open: false)
+        institution = InstitutionAccess.create(name: "US Bank")
+        AccountAccess.create(name: "Checking", owner: "Bob Bobberson", institution_id: institution[:id], open: false)
         json = {'account' => 'Checking', 'owner' => 'Bob Bobberson', 'institution' => 'US Bank'}
         response = @api.open_account(json)
-        account = Account.where(name: "Checking", owner: "Bob Bobberson").first
+        account = AccountAccess.where(name: "Checking", owner: "Bob Bobberson").first
         expect(account[:open]).to be true
         headers = {"Content-Type" => 'application/json'}
         body = {account: {name: "Checking", owner: "Bob Bobberson", open: true}}.to_json
@@ -29,10 +29,10 @@ describe 'GeneralLedger' do
     it "keeps an open account open" do
       DatabaseCleaner.cleaning do
         institution = Institution.create(name: "US Bank")
-        Account.create(name: "Checking", owner: "Sam Sammerson", institution_id: institution[:id], open: true)
+        AccountAccess.create(name: "Checking", owner: "Sam Sammerson", institution_id: institution[:id], open: true)
         json = {'account' => 'Checking', 'owner' => 'Sam Sammerson', 'institution' => 'US Bank'}
         response = @api.open_account(json)
-        account = Account.where(name: "Checking", owner: "Sam Sammerson").first
+        account = AccountAccess.where(name: "Checking", owner: "Sam Sammerson").first
         expect(account[:open]).to be true
         headers = {"Content-Type" => 'application/json'}
         body = {account: {name: "Checking", owner: "Sam Sammerson", open: true}}.to_json
@@ -56,11 +56,11 @@ describe 'GeneralLedger' do
 
     it "closes an open account" do
       DatabaseCleaner.cleaning do
-        institution = Institution.create(name: "US Bank")
-        Account.create(name: "Checking", owner: "Bob Bobberson", institution_id: institution[:id], open: true)
+        institution = InstitutionAccess.create(name: "US Bank")
+        AccountAccess.create(name: "Checking", owner: "Bob Bobberson", institution_id: institution[:id], open: true)
         json = {'account' => 'Checking', 'owner' => 'Bob Bobberson', 'institution' => 'US Bank'}
         response = @api.close_account(json)
-        account = Account.where(name: "Checking", owner: "Bob Bobberson").first
+        account = AccountAccess.where(name: "Checking", owner: "Bob Bobberson").first
         expect(account[:open]).to be false
         headers = {"Content-Type" => 'application/json'}
         body = {account: {name: "Checking", owner: "Bob Bobberson", open: false}}.to_json
@@ -70,11 +70,11 @@ describe 'GeneralLedger' do
 
     it "keeps a closed account closed" do
       DatabaseCleaner.cleaning do
-        institution = Institution.create(name: "US Bank")
-        Account.create(name: "Checking", owner: "Sam Sammerson", institution_id: institution[:id], open: false)
+        institution = InstitutionAccess.create(name: "US Bank")
+        AccountAccess.create(name: "Checking", owner: "Sam Sammerson", institution_id: institution[:id], open: false)
         json = {'account' => 'Checking', 'owner' => 'Sam Sammerson', 'institution' => 'US Bank'}
         response = @api.close_account(json)
-        account = Account.where(name: "Checking", owner: "Sam Sammerson").first
+        account = AccountAccess.where(name: "Checking", owner: "Sam Sammerson").first
         expect(account[:open]).to be false
         headers = {"Content-Type" => 'application/json'}
         body = {account: {name: "Checking", owner: "Sam Sammerson", open: false}}.to_json
@@ -100,10 +100,10 @@ describe 'GeneralLedger' do
       DatabaseCleaner.cleaning do
         json = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things', 'asset' => true, 'value' => 1012, 'timestamp' => Date.new(2013,1,7)}
         response = @api.append_snapshot(json)
-        institution = Institution.all.first
-        account = Account.all.first
-        investment = Investment.all.first
-        snapshot = Snapshot.all.first
+        institution = InstitutionAccess.first
+        account = AccountAccess.first
+        investment = InvestmentAccess.first
+        snapshot = SnapshotAccess.first
         expect(institution[:name]).to eq 'US Bank'
         expect(account[:name]).to eq 'Checking'
         expect(investment[:name]).to eq 'Poodles and Things'
@@ -116,10 +116,10 @@ describe 'GeneralLedger' do
       DatabaseCleaner.cleaning do
         json = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things', 'asset' => true, 'value' => 1012, 'timestamp' => Date.new(2013,1,7)}
         response = @api.append_snapshot(json)
-        institution = Institution.all.first
-        account = Account.all.first
-        investment = Investment.all.first
-        snapshot = Snapshot.all.first
+        institution = Institution.first
+        account = AccountAccess.first
+        investment = InvestmentAccess.first
+        snapshot = Snapshot.first
         expect(account.institution).to eq institution
         expect(investment.account).to eq account
         expect(snapshot.investment).to eq investment
@@ -131,9 +131,9 @@ describe 'GeneralLedger' do
         institution = Institution.create(name: 'US Bank')
         json = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things', 'asset' => true, 'value' => 1012, 'timestamp' => Date.new(2013,1,7)}
         response = @api.append_snapshot(json)
-        account = Account.all.first
-        investment = Investment.all.first
-        snapshot = Snapshot.all.first
+        account = AccountAccess.first
+        investment = InvestmentAccess.first
+        snapshot = Snapshot.first
         expect(Institution.all.length).to eq 1
         expect(account[:name]).to eq 'Checking'
         expect(investment[:name]).to eq 'Poodles and Things'
@@ -148,13 +148,13 @@ describe 'GeneralLedger' do
     it "appends a snapshot to the database when the account already exists" do
       DatabaseCleaner.cleaning do
         institution = Institution.create(name: 'US Bank')
-        account = Account.create(name: 'Checking', owner: 'Sam Sammerson', institution_id: institution[:id])
+        account = AccountAccess.create(name: 'Checking', owner: 'Sam Sammerson', institution_id: institution[:id])
         json = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things', 'asset' => true, 'value' => 1012, 'timestamp' => Date.new(2013,1,7)}
         response = @api.append_snapshot(json)
-        investment = Investment.all.first
-        snapshot = Snapshot.all.first
+        investment = InvestmentAccess.first
+        snapshot = Snapshot.first
         expect(Institution.all.length).to eq 1
-        expect(Account.all.length).to eq 1
+        expect(AccountAccess.all.length).to eq 1
         expect(investment[:name]).to eq 'Poodles and Things'
         expect(snapshot[:value]).to eq 1012
         expect(snapshot[:timestamp]).to eq Date.new(2013,1,7)
@@ -167,14 +167,14 @@ describe 'GeneralLedger' do
     it "appends a snapshot to the database when the invesetment already exists" do
       DatabaseCleaner.cleaning do
         institution = Institution.create(name: 'US Bank')
-        account = Account.create(name: 'Checking', owner: 'Sam Sammerson', institution_id: institution[:id])
-        investment = Investment.create(name: 'Poodles and Things', symbol: 'PT', asset: true, account_id: account[:id])
+        account = AccountAccess.create(name: 'Checking', owner: 'Sam Sammerson', institution_id: institution[:id])
+        investment = InvestmentAccess.create(name: 'Poodles and Things', symbol: 'PT', asset: true, account_id: account[:id])
         json = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things', 'asset' => true, 'value' => 1012, 'timestamp' => Date.new(2013,1,7)}
         response = @api.append_snapshot(json)
-        snapshot = Snapshot.all.first
+        snapshot = Snapshot.first
         expect(Institution.all.length).to eq 1
-        expect(Account.all.length).to eq 1
-        expect(Investment.all.length).to eq 1
+        expect(AccountAccess.all.length).to eq 1
+        expect(InvestmentAccess.all.length).to eq 1
         expect(snapshot[:value]).to eq 1012
         expect(snapshot[:timestamp]).to eq Date.new(2013,1,7)
         expect(account.institution).to eq institution
