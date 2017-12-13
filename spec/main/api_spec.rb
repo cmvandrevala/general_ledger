@@ -232,10 +232,24 @@ describe 'GeneralLedger' do
 
     it "does not return a snapshot where the account is closed" do
       DatabaseCleaner.cleaning do
-        institution = Institution.create(name: 'US Bank')
-        Account.create(name: 'Checking', owner: 'Sam Sammerson', open: false, institution_id: institution[:id])
+        institution = InstitutionAccess.create(name: 'US Bank')
+        AccountAccess.create(name: 'Checking', owner: 'Sam Sammerson', open: false, institution_id: institution[:id])
         snapshot_one = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things', 'asset' => true, 'value' => 1012, 'timestamp' => Date.new(2013,1,7)}
         snapshot_two = {'institution' => 'US Bank', 'account' => 'Savings', 'owner' => 'Sam Sammerson', 'investment' => 'Pups and Stuff', 'asset' => false, 'value' => 10102, 'timestamp' => Date.new(2013,1,7)}
+        @api.append_snapshot(snapshot_one)
+        @api.append_snapshot(snapshot_two)
+        response = @api.get_all_open_snapshots
+        expect(response).to eq [200, {'Content-Type' => "application/json"}, [{snapshots: [snapshot_two]}.to_json]]
+      end
+    end
+
+    it "does not return a snapshot where the investment is closed" do
+      DatabaseCleaner.cleaning do
+        institution = InstitutionAccess.create(name: 'US Bank')
+        account = AccountAccess.create(name: 'Checking', owner: 'Sam Sammerson', open: true, institution_id: institution[:id])
+        InvestmentAccess.create(name: 'Poodles and Things', asset: true, open: false, account_id: account[:id])
+        snapshot_one = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things', 'asset' => true, 'value' => 1012, 'timestamp' => Date.new(2013,1,7)}
+        snapshot_two = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Pups and Stuff', 'asset' => false, 'value' => 10102, 'timestamp' => Date.new(2013,1,7)}
         @api.append_snapshot(snapshot_one)
         @api.append_snapshot(snapshot_two)
         response = @api.get_all_open_snapshots

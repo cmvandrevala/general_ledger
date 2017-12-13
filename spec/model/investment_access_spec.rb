@@ -88,6 +88,22 @@ describe InvestmentAccess do
     end
   end
 
+  it 'sets the value of open to true by default' do
+    DatabaseCleaner.cleaning do
+      InvestmentAccess.create(name: 'Investment Name', symbol: 'CASHX', asset: false, term: 'long')
+      investment = InvestmentAccess.first
+      expect(investment[:open]).to be true
+    end
+  end
+
+  it 'sets the value of open to false' do
+    DatabaseCleaner.cleaning do
+      InvestmentAccess.create(name: 'Investment Name', symbol: 'CASHX', asset: false, term: 'long', open: false)
+      investment = InvestmentAccess.first
+      expect(investment[:open]).to be false
+    end
+  end
+
   it 'sets the date an investment was opened' do
     DatabaseCleaner.cleaning do
       InvestmentAccess.create(name: 'Investment Name', symbol: 'CASHX', asset: false, open_date: Date.new(2001,2,3))
