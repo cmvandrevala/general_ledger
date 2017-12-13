@@ -1,5 +1,6 @@
 require_relative '../../lib/main/api.rb'
 require 'database_cleaner'
+require 'yaml'
 
 DatabaseCleaner.strategy = :transaction
 

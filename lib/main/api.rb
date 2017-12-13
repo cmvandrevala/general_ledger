@@ -1,17 +1,10 @@
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 
 require 'sequel'
-require_relative '../../db/database_connection'
 
 require_relative '../../lib/json/response_builder.rb'
 require_relative '../../lib/json/snapshot_validator.rb'
-
-require_relative '../../lib/model/institution.rb'
-require_relative '../../lib/model/account.rb'
-require_relative '../../lib/model/investment.rb'
-require_relative '../../lib/model/snapshot.rb'
-
-db = DatabaseConnection.new.create
+require_relative '../../lib/model/model.rb'
 
 class Api
 

@@ -1,5 +1,5 @@
 require 'database_cleaner'
-require 'model/institution'
+require 'model/model'
 
 DatabaseCleaner.strategy = :transaction
 

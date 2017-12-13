@@ -1,5 +1,5 @@
-$LOAD_PATH.unshift(File.dirname(__FILE__))
-require 'db/database_connection'
+require 'sequel'
+require 'yaml'
 
 task :default => [:start]
 
@@ -11,7 +11,11 @@ end
 namespace :db do
   Sequel.extension :migration
   migrations_directory = 'db/migrations'
-  DB = DatabaseConnection.new.create
+
+  environment = 'test'
+  database_config = YAML.load_file('config.yml')
+  params = database_config[environment].reduce({}, :merge)
+  DB = Sequel.connect(params)
 
   desc 'Prints the current schema version'
   task :version do

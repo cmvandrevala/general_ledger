@@ -1,5 +1,5 @@
 require 'database_cleaner'
-require 'model/snapshot'
+require 'model/model'
 
 DatabaseCleaner.strategy = :transaction
 
