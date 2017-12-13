@@ -1,7 +1,7 @@
 require 'sequel'
 require 'yaml'
 
-environment = 'test'
+environment = ENV['ENV']
 database_config = YAML.load_file('config.yml')
 params = database_config[environment].reduce({}, :merge)
 db = Sequel.connect(params)

@@ -12,7 +12,7 @@ namespace :db do
   Sequel.extension :migration
   migrations_directory = 'db/migrations'
 
-  environment = 'test'
+  environment = ENV['ENV']
   database_config = YAML.load_file('config.yml')
   params = database_config[environment].reduce({}, :merge)
   DB = Sequel.connect(params)
