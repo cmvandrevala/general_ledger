@@ -2,10 +2,18 @@ require 'sinatra/base'
 require_relative 'lib/main/api'
 
 class GeneralLedger < Sinatra::Base
+
   before do
     @api = Api.new
-    request.body.rewind
-    @request_payload = JSON.parse request.body.read
+    begin
+      request.body.rewind
+      @request_payload = JSON.parse request.body.read
+    rescue
+    end
+  end
+
+  get '/' do
+    @api.get_all_open_snapshots
   end
 
   post '/open_account' do

@@ -37,6 +37,19 @@ class Api
     end
   end
 
+  def get_all_open_snapshots
+    output = []
+    SnapshotAccess.all.each do |snapshot|
+      investment = snapshot.investment
+      account = investment.account
+      institution = account.institution
+      hash = {institution: institution[:name], account: account[:name], owner: account[:owner], investment: investment[:name], asset: investment[:asset], value: snapshot[:value], timestamp: snapshot[:timestamp]}
+      output << hash if account[:open]
+    end
+    body = {snapshots: output}
+    ResponseBuilder.new.set_body(body.to_json).build
+  end
+
   private
 
   def set_account_open_status(account, status)

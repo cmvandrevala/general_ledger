@@ -201,4 +201,48 @@ describe 'GeneralLedger' do
 
   end
 
+  context '#get_all_open_snapshots' do
+
+    it "returns an empty response if there are no snapshots in the database" do
+      DatabaseCleaner.cleaning do
+        response = @api.get_all_open_snapshots
+        expect(response).to eq [200, {'Content-Type' => "application/json"}, [{snapshots: []}.to_json]]
+      end
+    end
+
+    it "returns a single snapshot from the database" do
+      DatabaseCleaner.cleaning do
+        snapshot_json = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things', 'asset' => true, 'value' => 1012, 'timestamp' => Date.new(2013,1,7)}
+        @api.append_snapshot(snapshot_json)
+        response = @api.get_all_open_snapshots
+        expect(response).to eq [200, {'Content-Type' => "application/json"}, [{snapshots: [snapshot_json]}.to_json]]
+      end
+    end
+
+    it "returns two snapshots from the database" do
+      DatabaseCleaner.cleaning do
+        snapshot_one = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things', 'asset' => true, 'value' => 1012, 'timestamp' => Date.new(2013,1,7)}
+        snapshot_two = {'institution' => 'US Bank', 'account' => 'Savings', 'owner' => 'Sam Sammerson', 'investment' => 'Pups and Stuff', 'asset' => false, 'value' => 10102, 'timestamp' => Date.new(2013,1,7)}
+        @api.append_snapshot(snapshot_one)
+        @api.append_snapshot(snapshot_two)
+        response = @api.get_all_open_snapshots
+        expect(response).to eq [200, {'Content-Type' => "application/json"}, [{snapshots: [snapshot_one, snapshot_two]}.to_json]]
+      end
+    end
+
+    it "does not return a snapshot where the account is closed" do
+      DatabaseCleaner.cleaning do
+        institution = Institution.create(name: 'US Bank')
+        Account.create(name: 'Checking', owner: 'Sam Sammerson', open: false, institution_id: institution[:id])
+        snapshot_one = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things', 'asset' => true, 'value' => 1012, 'timestamp' => Date.new(2013,1,7)}
+        snapshot_two = {'institution' => 'US Bank', 'account' => 'Savings', 'owner' => 'Sam Sammerson', 'investment' => 'Pups and Stuff', 'asset' => false, 'value' => 10102, 'timestamp' => Date.new(2013,1,7)}
+        @api.append_snapshot(snapshot_one)
+        @api.append_snapshot(snapshot_two)
+        response = @api.get_all_open_snapshots
+        expect(response).to eq [200, {'Content-Type' => "application/json"}, [{snapshots: [snapshot_two]}.to_json]]
+      end
+    end
+
+  end
+
 end
