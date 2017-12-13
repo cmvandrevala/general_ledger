@@ -28,7 +28,7 @@ describe 'GeneralLedger' do
 
     it "keeps an open account open" do
       DatabaseCleaner.cleaning do
-        institution = Institution.create(name: "US Bank")
+        institution = InstitutionAccess.create(name: "US Bank")
         AccountAccess.create(name: "Checking", owner: "Sam Sammerson", institution_id: institution[:id], open: true)
         json = {'account' => 'Checking', 'owner' => 'Sam Sammerson', 'institution' => 'US Bank'}
         response = @api.open_account(json)
@@ -116,10 +116,10 @@ describe 'GeneralLedger' do
       DatabaseCleaner.cleaning do
         json = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things', 'asset' => true, 'value' => 1012, 'timestamp' => Date.new(2013,1,7)}
         response = @api.append_snapshot(json)
-        institution = Institution.first
+        institution = InstitutionAccess.first
         account = AccountAccess.first
         investment = InvestmentAccess.first
-        snapshot = Snapshot.first
+        snapshot = SnapshotAccess.first
         expect(account.institution).to eq institution
         expect(investment.account).to eq account
         expect(snapshot.investment).to eq investment
@@ -128,13 +128,13 @@ describe 'GeneralLedger' do
 
     it "appends a snapshot to the database when the institution already exists" do
       DatabaseCleaner.cleaning do
-        institution = Institution.create(name: 'US Bank')
+        institution = InstitutionAccess.create(name: 'US Bank')
         json = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things', 'asset' => true, 'value' => 1012, 'timestamp' => Date.new(2013,1,7)}
         response = @api.append_snapshot(json)
         account = AccountAccess.first
         investment = InvestmentAccess.first
-        snapshot = Snapshot.first
-        expect(Institution.all.length).to eq 1
+        snapshot = SnapshotAccess.first
+        expect(InstitutionAccess.all.length).to eq 1
         expect(account[:name]).to eq 'Checking'
         expect(investment[:name]).to eq 'Poodles and Things'
         expect(snapshot[:value]).to eq 1012
@@ -147,13 +147,13 @@ describe 'GeneralLedger' do
 
     it "appends a snapshot to the database when the account already exists" do
       DatabaseCleaner.cleaning do
-        institution = Institution.create(name: 'US Bank')
+        institution = InstitutionAccess.create(name: 'US Bank')
         account = AccountAccess.create(name: 'Checking', owner: 'Sam Sammerson', institution_id: institution[:id])
         json = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things', 'asset' => true, 'value' => 1012, 'timestamp' => Date.new(2013,1,7)}
         response = @api.append_snapshot(json)
         investment = InvestmentAccess.first
-        snapshot = Snapshot.first
-        expect(Institution.all.length).to eq 1
+        snapshot = SnapshotAccess.first
+        expect(InstitutionAccess.all.length).to eq 1
         expect(AccountAccess.all.length).to eq 1
         expect(investment[:name]).to eq 'Poodles and Things'
         expect(snapshot[:value]).to eq 1012
@@ -166,13 +166,13 @@ describe 'GeneralLedger' do
 
     it "appends a snapshot to the database when the invesetment already exists" do
       DatabaseCleaner.cleaning do
-        institution = Institution.create(name: 'US Bank')
+        institution = InstitutionAccess.create(name: 'US Bank')
         account = AccountAccess.create(name: 'Checking', owner: 'Sam Sammerson', institution_id: institution[:id])
         investment = InvestmentAccess.create(name: 'Poodles and Things', symbol: 'PT', asset: true, account_id: account[:id])
         json = {'institution' => 'US Bank', 'account' => 'Checking', 'owner' => 'Sam Sammerson', 'investment' => 'Poodles and Things', 'asset' => true, 'value' => 1012, 'timestamp' => Date.new(2013,1,7)}
         response = @api.append_snapshot(json)
-        snapshot = Snapshot.first
-        expect(Institution.all.length).to eq 1
+        snapshot = SnapshotAccess.first
+        expect(InstitutionAccess.all.length).to eq 1
         expect(AccountAccess.all.length).to eq 1
         expect(InvestmentAccess.all.length).to eq 1
         expect(snapshot[:value]).to eq 1012

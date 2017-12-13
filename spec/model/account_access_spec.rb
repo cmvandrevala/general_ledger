@@ -105,7 +105,7 @@ describe AccountAccess do
 
   it 'has an institution as a parent' do
     DatabaseCleaner.cleaning do
-      institution = Institution.create(name: 'inst')
+      institution = InstitutionAccess.create(name: 'inst')
       account = AccountAccess.create(name: 'Account Name 1', owner: 'Bob', institution_id: institution[:id])
       expect(account[:institution_id]).to eq institution[:id]
       expect(institution.accounts).to eq [account]
@@ -115,7 +115,7 @@ describe AccountAccess do
 
   it 'has a default value of true for the open column' do
     DatabaseCleaner.cleaning do
-      institution = Institution.create(name: 'inst')
+      institution = InstitutionAccess.create(name: 'inst')
       account = AccountAccess.create(name: 'Account Name', owner: 'Bob', institution_id: institution[:id])
       expect(account[:open]).to be true
     end
@@ -123,7 +123,7 @@ describe AccountAccess do
 
   it 'can set the open column to false' do
     DatabaseCleaner.cleaning do
-      institution = Institution.create(name: 'inst')
+      institution = InstitutionAccess.create(name: 'inst')
       account = AccountAccess.create(name: 'Account Name', owner: 'Bob', open: false, institution_id: institution[:id])
       expect(account[:open]).to be false
     end
@@ -133,7 +133,7 @@ describe AccountAccess do
 
     it 'finds an account given parameters via JSON' do
       DatabaseCleaner.cleaning do
-        institution = Institution.create(name: 'inst')
+        institution = InstitutionAccess.create(name: 'inst')
         AccountAccess.create(name: 'Account Name', owner: 'Bob', institution_id: institution[:id])
         json = {'account' => 'Account Name', 'owner' => 'Bob', 'institution' => 'inst'}
         account = AccountAccess.find_from_json(json)
@@ -144,7 +144,7 @@ describe AccountAccess do
 
     it 'returns nil if it cannot find the corresponding institution' do
       DatabaseCleaner.cleaning do
-        institution = Institution.create(name: 'inst')
+        institution = InstitutionAccess.create(name: 'inst')
         AccountAccess.create(name: 'Account Name', owner: 'Bob', institution_id: institution[:id])
         json = {'account' => 'Account Name', 'owner' => 'Bob', 'institution' => 'random'}
         account = AccountAccess.find_from_json(json)
@@ -154,7 +154,7 @@ describe AccountAccess do
 
     it 'returns nil if it cannot find the corresponding account name' do
       DatabaseCleaner.cleaning do
-        institution = Institution.create(name: 'inst')
+        institution = InstitutionAccess.create(name: 'inst')
         AccountAccess.create(name: 'Account Name', owner: 'Bob', institution_id: institution[:id])
         json = {'account' => 'random name', 'owner' => 'Bob', 'institution' => 'inst'}
         account = AccountAccess.find_from_json(json)
@@ -164,7 +164,7 @@ describe AccountAccess do
 
     it 'returns nil if it cannot find the corresponding owner' do
       DatabaseCleaner.cleaning do
-        institution = Institution.create(name: 'inst')
+        institution = InstitutionAccess.create(name: 'inst')
         AccountAccess.create(name: 'Account Name', owner: 'Bob', institution_id: institution[:id])
         json = {'account' => 'Account Name', 'owner' => 'random', 'institution' => 'inst'}
         account = AccountAccess.find_from_json(json)
