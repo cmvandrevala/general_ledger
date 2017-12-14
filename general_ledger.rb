@@ -1,10 +1,11 @@
 require 'sinatra/base'
 require_relative 'lib/main/api'
+require_relative 'lib/model/snapshot_access'
 
 class GeneralLedger < Sinatra::Base
 
   before do
-    @api = Api.new
+    @api = Api.new(SnapshotAccess)
     begin
       request.body.rewind
       @request_payload = JSON.parse request.body.read
@@ -14,14 +15,6 @@ class GeneralLedger < Sinatra::Base
 
   get '/' do
     @api.get_all_open_snapshots
-  end
-
-  post '/open_account' do
-    @api.open_account(@request_payload)
-  end
-
-  post '/close_account' do
-    @api.close_account(@request_payload)
   end
 
   post '/append_snapshot' do

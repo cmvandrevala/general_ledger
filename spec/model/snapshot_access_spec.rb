@@ -3,102 +3,135 @@ require 'model/snapshot_access'
 
 DatabaseCleaner.strategy = :transaction
 
-describe SnapshotAccess do
+describe Snapshot do
 
-  it 'creates a new snapshot' do
-    DatabaseCleaner.cleaning do
-      SnapshotAccess.create(timestamp: DateTime.now, value: 10_000, description: 'Debit')
-      expect(SnapshotAccess.all.length).to eq 1
+  context '#create_snapshot_with_structure' do
+
+    it 'creates a snapshot and its associated accounts, investments, and institutions in an empty database' do
+      DatabaseCleaner.cleaning do
+        json = {'institution' => 'institution', 'account' => 'account', 'owner' => 'owner', 'investment' => 'investment', 'asset' => true, 'timestamp' => '2016-12-12', 'value' => 10123}
+        actual_response = SnapshotAccess.create_snapshot_with_structure(json)
+        expected_response = {status: 'Successfully appended the snapshot'}
+        institution = Institution.first
+        account = Account.first
+        investment = Investment.first
+        snapshot = Snapshot.first
+        expect(snapshot.investment).to eq investment
+        expect(investment.account).to eq account
+        expect(account.institution).to eq institution
+        expect(actual_response).to eq expected_response
+      end
     end
+
+    it 'creates a snapshot when an institution already exists' do
+      DatabaseCleaner.cleaning do
+        institution = Institution.create(name: 'institution')
+        json = {'institution' => 'institution', 'account' => 'account', 'owner' => 'owner', 'investment' => 'investment', 'asset' => true, 'timestamp' => '2016-12-12', 'value' => 10123}
+        actual_response = SnapshotAccess.create_snapshot_with_structure(json)
+        expected_response = {status: 'Successfully appended the snapshot'}
+        account = Account.first
+        investment = Investment.first
+        snapshot = Snapshot.first
+        expect(snapshot.investment).to eq investment
+        expect(investment.account).to eq account
+        expect(account.institution).to eq institution
+        expect(actual_response).to eq expected_response
+      end
+    end
+
+    it 'creates a snapshot when an account already exists' do
+      DatabaseCleaner.cleaning do
+        institution = Institution.create(name: 'institution')
+        account = Account.create(name: 'account', owner: 'owner', institution_id: institution[:id])
+        json = {'institution' => 'institution', 'account' => 'account', 'owner' => 'owner', 'investment' => 'investment', 'asset' => true, 'timestamp' => '2016-12-12', 'value' => 10123}
+        actual_response = SnapshotAccess.create_snapshot_with_structure(json)
+        expected_response = {status: 'Successfully appended the snapshot'}
+        investment = Investment.first
+        snapshot = Snapshot.first
+        expect(snapshot.investment).to eq investment
+        expect(investment.account).to eq account
+        expect(account.institution).to eq institution
+        expect(actual_response).to eq expected_response
+      end
+    end
+
+    it 'creates a snapshot when an investment already exists' do
+      DatabaseCleaner.cleaning do
+        institution = Institution.create(name: 'institution')
+        account = Account.create(name: 'account', owner: 'owner', institution_id: institution[:id])
+        investment = Investment.create(name: 'investment', asset: true, account_id: account[:id])
+        json = {'institution' => 'institution', 'account' => 'account', 'owner' => 'owner', 'investment' => 'investment', 'asset' => true, 'timestamp' => '2016-12-12', 'value' => 10123}
+        actual_response = SnapshotAccess.create_snapshot_with_structure(json)
+        expected_response = {status: 'Successfully appended the snapshot'}
+        snapshot = Snapshot.first
+        expect(snapshot.investment).to eq investment
+        expect(investment.account).to eq account
+        expect(account.institution).to eq institution
+        expect(actual_response).to eq expected_response
+      end
+    end
+
+    it 'does not create any new entries in the database if the json input is invalid' do
+      DatabaseCleaner.cleaning do
+        invalid_json = {'institution' => 'institution', 'account' => 'account', 'owner' => 'owner', 'investment' => 'investment', 'timestamp' => '2016-12-12', 'value' => 10123}
+        actual_response = SnapshotAccess.create_snapshot_with_structure(invalid_json)
+        expected_response = {status: 'Failed to append the snapshot'}
+        expect(Institution.first).to be nil
+        expect(Account.first).to be nil
+        expect(Investment.first).to be nil
+        expect(Snapshot.first).to be nil
+        expect(actual_response).to eq expected_response
+      end
+    end
+
   end
 
-  it 'creates two new snapshots' do
-    DatabaseCleaner.cleaning do
-      SnapshotAccess.create(timestamp: DateTime.now, value: 10, description: 'Debit')
-      SnapshotAccess.create(timestamp: DateTime.now, value: 10_000)
-      expect(SnapshotAccess.all.length).to eq 2
-    end
-  end
+  context "#get_all_open_snapshots" do
 
-  it 'sets the timestamp of the snapshot' do
-    DatabaseCleaner.cleaning do
-      timestamp = DateTime.now
-      SnapshotAccess.create(timestamp: timestamp, value: 10, description: 'Debit')
-      snapshot = SnapshotAccess.first
-      expect(snapshot[:timestamp].to_date).to eq timestamp.to_date
+    it "returns an empty response if there are no snapshots in the database" do
+      DatabaseCleaner.cleaning do
+        response = SnapshotAccess.get_all_open_snapshots
+        expected_response = {snapshots: []}
+        expect(response).to eq expected_response
+      end
     end
-  end
 
-  it 'enforces a non-null timestamp for the snapshot' do
-    DatabaseCleaner.cleaning do
-      expect{ SnapshotAccess.create(value: 10, description: 'Debit') }.to raise_error Sequel::NotNullConstraintViolation
+    it "returns a snapshot from the database" do
+      DatabaseCleaner.cleaning do
+        institution = Institution.create(name: 'US Bank')
+        account = Account.create(name: 'Checking', owner: 'Sam Sammerson', institution_id: institution[:id])
+        investment = Investment.create(name: 'Investment', asset: false, account_id: account[:id])
+        Snapshot.create(timestamp: '2011-12-13', value: 112233, investment_id: investment[:id])
+        response = SnapshotAccess.get_all_open_snapshots
+        expected_response = {snapshots: [{institution: "US Bank", account: "Checking", owner: "Sam Sammerson", investment: "Investment", asset: false, value: 112233, timestamp: Date.new(2011,12,13)}]}
+        expect(response).to eq expected_response
+      end
     end
-  end
 
-  it 'sets the value of the snapshot' do
-    DatabaseCleaner.cleaning do
-      SnapshotAccess.create(timestamp: DateTime.now, value: 10, description: 'Debit')
-      snapshot = SnapshotAccess.first
-      expect(snapshot[:value]).to eq 10
+    it "does not return a snapshot when its account is closed" do
+      DatabaseCleaner.cleaning do
+        institution = Institution.create(name: 'US Bank')
+        account = Account.create(name: 'Checking', owner: 'Sam Sammerson', open: false, institution_id: institution[:id])
+        investment = Investment.create(name: 'Investment', asset: false, account_id: account[:id])
+        Snapshot.create(timestamp: '2011-12-13', value: 112233, investment_id: investment[:id])
+        response = SnapshotAccess.get_all_open_snapshots
+        expected_response = {snapshots: []}
+        expect(response).to eq expected_response
+      end
     end
-  end
 
-  it 'enforces a non-null value for the snapshot' do
-    DatabaseCleaner.cleaning do
-      expect{ SnapshotAccess.create(timestamp: DateTime.now, description: 'Debit') }.to raise_error Sequel::NotNullConstraintViolation
+    it "does not return a snapshot when its investment is closed" do
+      DatabaseCleaner.cleaning do
+        institution = Institution.create(name: 'US Bank')
+        account = Account.create(name: 'Checking', owner: 'Sam Sammerson', institution_id: institution[:id])
+        investment = Investment.create(name: 'Investment', asset: false, open: false, account_id: account[:id])
+        Snapshot.create(timestamp: '2011-12-13', value: 112233, investment_id: investment[:id])
+        response = SnapshotAccess.get_all_open_snapshots
+        expected_response = {snapshots: []}
+        expect(response).to eq expected_response
+      end
     end
-  end
 
-  it 'sets the description for the snapshot' do
-    DatabaseCleaner.cleaning do
-      SnapshotAccess.create(timestamp: DateTime.now, value: 10, description: 'Debit')
-      snapshot = SnapshotAccess.first
-      expect(snapshot[:description]).to eq 'Debit'
-    end
-  end
-
-  it 'sets null for the description for the snapshot' do
-    DatabaseCleaner.cleaning do
-      SnapshotAccess.create(timestamp: DateTime.now, value: 10)
-      snapshot = SnapshotAccess.first
-      expect(snapshot[:description]).to be_nil
-    end
-  end
-
-  it 'sets the created_at timestamp' do
-    DatabaseCleaner.cleaning do
-      SnapshotAccess.create(timestamp: DateTime.now, value: 10_000, description: 'Debit')
-      snapshot = SnapshotAccess.first
-      expect(snapshot[:created_at]).not_to be_nil
-    end
-  end
-
-  it 'sets the updated_at timestamp at creation' do
-    DatabaseCleaner.cleaning do
-      SnapshotAccess.create(timestamp: DateTime.now, value: 10_000, description: 'Debit')
-      snapshot = SnapshotAccess.first
-      expect(snapshot[:updated_at]).not_to be_nil
-    end
-  end
-
-  it 'sets the id of the snapshot' do
-    DatabaseCleaner.cleaning do
-      SnapshotAccess.create(timestamp: DateTime.now, value: 10_000, description: 'Debit')
-      snapshot = SnapshotAccess.first
-      expect(snapshot[:id]).not_to be_nil
-    end
-  end
-
-  it 'has an investment as a parent' do
-    DatabaseCleaner.cleaning do
-      institution = InstitutionAccess.create(name: 'inst')
-      account = AccountAccess.create(name: 'Account Name', owner: 'Bob', institution_id: institution[:id])
-      investment = InvestmentAccess.create(name: 'Investment Name', symbol: 'CASHX', asset: true, account_id: account[:id])
-      snapshot = SnapshotAccess.create(timestamp: DateTime.now, value: 10_000, description: 'Debit', investment_id: investment[:id])
-      expect(snapshot[:investment_id]).to eq investment[:id]
-      expect(investment.snapshots).to eq [snapshot]
-      expect(snapshot.investment).to eq investment
-    end
   end
 
 end
