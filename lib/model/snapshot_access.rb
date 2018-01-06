@@ -21,7 +21,7 @@ class SnapshotAccess
       investment = snapshot.investment
       account = investment.account
       institution = account.institution
-      hash = {institution: institution[:name], account: account[:name], owner: account[:owner], investment: investment[:name], asset: investment[:asset], value: snapshot[:value], timestamp: snapshot[:timestamp]}
+      hash = {institution: institution[:name], account: account[:name], owner: account[:owner], investment: investment[:name], asset: investment[:asset], asset_class: investment[:asset_class], value: snapshot[:value], timestamp: snapshot[:timestamp]}
       output << hash if account[:open] && investment[:open]
     end
     body = {snapshots: output}
