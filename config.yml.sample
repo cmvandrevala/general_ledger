@@ -1,0 +1,25 @@
+---
+development:
+  - adapter: 'postgres'
+  - database: 'dev_ledger'
+  - encoding: 'utf8'
+  - host: 'localhost'
+  - pool: 5
+  - user: < USER >
+  - password: < PASSWORD >
+test:
+  - adapter: 'postgres'
+  - database: 'test_ledger'
+  - encoding: 'utf8'
+  - host: 'localhost'
+  - pool: 5
+  - user: < USER >
+  - password: < PASSWORD >
+production:
+  - adapter: 'postgres'
+  - database: 'prod_ledger'
+  - encoding: 'utf8'
+  - host: 'localhost'
+  - pool: 5
+  - user: < USER >
+  - password: < PASSWORD >
