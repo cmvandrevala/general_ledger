@@ -103,7 +103,7 @@ describe Snapshot do
         investment = Investment.create(name: 'Investment', asset: false, asset_class: 'Cash Equivalents', account_id: account[:id])
         Snapshot.create(timestamp: '2011-12-13', value: 112233, investment_id: investment[:id])
         response = SnapshotAccess.get_all_open_snapshots
-        expected_response = {snapshots: [{institution: "US Bank", account: "Checking", owner: "Sam Sammerson", investment: "Investment", asset: false, asset_class: "Cash Equivalents", value: 112233, timestamp: Date.new(2011,12,13)}]}
+        expected_response = {snapshots: [{institution: "US Bank", account: "Checking", owner: "Sam Sammerson", investment: "Investment", asset: false, asset_class: "Cash Equivalents", update_frequency: 7, value: 112233, timestamp: Date.new(2011,12,13)}]}
         expect(response).to eq expected_response
       end
     end
@@ -115,7 +115,7 @@ describe Snapshot do
         investment = Investment.create(name: 'Investment', asset: false, account_id: account[:id])
         Snapshot.create(timestamp: '2011-12-13', value: 112233, investment_id: investment[:id])
         response = SnapshotAccess.get_all_open_snapshots
-        expected_response = {snapshots: [{institution: "US Bank", account: "Checking", owner: "Sam Sammerson", investment: "Investment", asset: false, asset_class: "None", value: 112233, timestamp: Date.new(2011,12,13)}]}
+        expected_response = {snapshots: [{institution: "US Bank", account: "Checking", owner: "Sam Sammerson", investment: "Investment", asset: false, asset_class: "None", update_frequency: 7, value: 112233, timestamp: Date.new(2011,12,13)}]}
         expect(response).to eq expected_response
       end
     end
@@ -140,6 +140,18 @@ describe Snapshot do
         Snapshot.create(timestamp: '2011-12-13', value: 112233, investment_id: investment[:id])
         response = SnapshotAccess.get_all_open_snapshots
         expected_response = {snapshots: []}
+        expect(response).to eq expected_response
+      end
+    end
+
+    it "returns an investment with a non-default update frequency" do
+      DatabaseCleaner.cleaning do
+        institution = Institution.create(name: 'US Bank')
+        account = Account.create(name: 'Checking', owner: 'Sam Sammerson', institution_id: institution[:id])
+        investment = Investment.create(name: 'Investment', asset: false, update_frequency: 5, account_id: account[:id])
+        Snapshot.create(timestamp: '2011-12-13', value: 112233, investment_id: investment[:id])
+        response = SnapshotAccess.get_all_open_snapshots
+        expected_response = {snapshots: [{institution: "US Bank", account: "Checking", owner: "Sam Sammerson", investment: "Investment", asset: false, asset_class: "None", update_frequency: 5, value: 112233, timestamp: Date.new(2011,12,13)}]}
         expect(response).to eq expected_response
       end
     end
