@@ -100,10 +100,10 @@ describe Snapshot do
       DatabaseCleaner.cleaning do
         institution = Institution.create(name: 'US Bank')
         account = Account.create(name: 'Checking', owner: 'Sam Sammerson', institution_id: institution[:id])
-        investment = Investment.create(name: 'Investment', asset: false, asset_class: 'Cash Equivalents', account_id: account[:id])
+        investment = Investment.create(name: 'Investment', asset: false, asset_class: 'Cash Equivalents', account_id: account[:id], open_date: '2010-01-01')
         Snapshot.create(timestamp: '2011-12-13', value: 112233, investment_id: investment[:id])
         response = SnapshotAccess.get_all_open_snapshots
-        expected_response = {snapshots: [{institution: "US Bank", account: "Checking", owner: "Sam Sammerson", investment: "Investment", asset: false, asset_class: "Cash Equivalents", update_frequency: 7, value: 112233, timestamp: Date.new(2011,12,13)}]}
+        expected_response = {snapshots: [{institution: "US Bank", account: "Checking", owner: "Sam Sammerson", investment: "Investment", asset: false, asset_class: "Cash Equivalents", update_frequency: 7, value: 112233, timestamp: Date.new(2011,12,13), open_date: Date.new(2010,1,1)}]}
         expect(response).to eq expected_response
       end
     end
@@ -115,7 +115,7 @@ describe Snapshot do
         investment = Investment.create(name: 'Investment', asset: false, account_id: account[:id])
         Snapshot.create(timestamp: '2011-12-13', value: 112233, investment_id: investment[:id])
         response = SnapshotAccess.get_all_open_snapshots
-        expected_response = {snapshots: [{institution: "US Bank", account: "Checking", owner: "Sam Sammerson", investment: "Investment", asset: false, asset_class: "None", update_frequency: 7, value: 112233, timestamp: Date.new(2011,12,13)}]}
+        expected_response = {snapshots: [{institution: "US Bank", account: "Checking", owner: "Sam Sammerson", investment: "Investment", asset: false, asset_class: "None", update_frequency: 7, value: 112233, timestamp: Date.new(2011,12,13), open_date: nil}]}
         expect(response).to eq expected_response
       end
     end
@@ -151,7 +151,7 @@ describe Snapshot do
         investment = Investment.create(name: 'Investment', asset: false, update_frequency: 5, account_id: account[:id])
         Snapshot.create(timestamp: '2011-12-13', value: 112233, investment_id: investment[:id])
         response = SnapshotAccess.get_all_open_snapshots
-        expected_response = {snapshots: [{institution: "US Bank", account: "Checking", owner: "Sam Sammerson", investment: "Investment", asset: false, asset_class: "None", update_frequency: 5, value: 112233, timestamp: Date.new(2011,12,13)}]}
+        expected_response = {snapshots: [{institution: "US Bank", account: "Checking", owner: "Sam Sammerson", investment: "Investment", asset: false, asset_class: "None", update_frequency: 5, value: 112233, timestamp: Date.new(2011,12,13), open_date: nil}]}
         expect(response).to eq expected_response
       end
     end
