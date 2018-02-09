@@ -1,4 +1,13 @@
 language: ruby
 rvm:
   - 2.3.5
-script: bundle exec rspec spec
+services:
+  - postgresql
+env:
+  - ENV=test
+before_script:
+  - psql -c 'create database test_ledger;' -U postgres
+  - gem install bundler
+  - bundle exec rake db:reset
+script:
+  - bundle exec rspec spec

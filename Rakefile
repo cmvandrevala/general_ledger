@@ -13,7 +13,13 @@ namespace :db do
   migrations_directory = 'db/migrations'
 
   environment = ENV['ENV']
-  database_config = YAML.load_file('config.yml')
+
+  if File.file? 'config.yml'
+    database_config = YAML.load_file('config.yml')
+  else
+    database_config = {"test"=>[{"adapter"=>"postgres", "database"=>"test_ledger", "encoding"=>"utf8", "host"=>"localhost", "pool"=>5, "user"=>"postgres"}]}
+  end
+
   params = database_config[environment].reduce({}, :merge)
   DB = Sequel.connect(params)
 
