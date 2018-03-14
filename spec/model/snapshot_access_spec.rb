@@ -3,7 +3,7 @@ require 'model/snapshot_access'
 
 DatabaseCleaner.strategy = :transaction
 
-describe Snapshot do
+describe SnapshotAccess do
 
   context '#create_snapshot_with_structure' do
 
