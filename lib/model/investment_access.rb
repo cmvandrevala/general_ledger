@@ -13,4 +13,21 @@ class InvestmentAccess
     {status: 'Successfully changed the update frequency'}
   end
 
+  def self.update_open_date(json)
+    institution = Institution.find(name: json['institution'])
+    return {status: "Could not find an institution of \"#{json['institution']}\""} if institution.nil?
+    account = Account.find(name: json['account'], owner: json['owner'], institution_id: institution[:id])
+    return {status: "Could not find an account of \"#{json['account']}\""} if account.nil?
+    investment = Investment.find(name: json['investment'], asset: json['asset'], account_id: account[:id])
+    return {status: "Could not find an investment of \"#{json['investment']}\""} if investment.nil?
+
+    begin
+      investment.update(open_date: json['open_date'])
+      {status: 'Successfully changed the open date'}
+    rescue
+      {status: "The open date is invalid"}
+    end
+
+  end
+
 end

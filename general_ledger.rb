@@ -26,5 +26,9 @@ class GeneralLedger < Sinatra::Base
     @api.update_frequency(@request_payload)
   end
 
+  post '/update_open_date' do
+    @api.update_open_date(@request_payload)
+  end
+
   run! if app_file == $0
 end

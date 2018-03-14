@@ -4,6 +4,10 @@ class MockInvestments
   def self.update_frequency(json)
     {status: 'Success'}
   end
+
+  def self.update_open_date(json)
+    {status: 'Success'}
+  end
 end
 
 class MockSnapshots
@@ -40,6 +44,13 @@ describe 'GeneralLedger' do
     it "returns a successful response with the status provided by the snapshots model" do
       response = @api.update_frequency({})
       expect(response).to eq [200, {"Content-Type"=>"application/json"}, [MockInvestments.update_frequency({}).to_json]]
+    end
+  end
+
+  context '#update_open_date' do
+    it "returns a successful response with the status provided by the snapshots model" do
+      response = @api.update_open_date({})
+      expect(response).to eq [200, {"Content-Type"=>"application/json"}, [MockInvestments.update_open_date({}).to_json]]
     end
   end
 

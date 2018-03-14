@@ -23,4 +23,9 @@ class Api
     ResponseBuilder.new.set_body(body.to_json).build
   end
 
+  def update_open_date(json)
+    body = @investments.update_open_date(json)
+    ResponseBuilder.new.set_body(body.to_json).build
+  end
+
 end
